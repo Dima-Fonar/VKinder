@@ -2,8 +2,8 @@ from random import randrange
 
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from community_token import TOKEN_GROUP
-from vk_requests import get_user_info
+from community_token import TOKEN_GROUP, TOKEN_USER
+from vk_requests import get_user_info, get_user_search
 
 
 
@@ -65,4 +65,6 @@ for event in longpoll.listen():
                     user_sex = get_sex()
                     user_info['sex'] = user_sex
 
-                print(user_info)
+                for msg in get_user_search(user_info):
+                    print(type(msg))
+                    write_msg(event.user_id, msg)
