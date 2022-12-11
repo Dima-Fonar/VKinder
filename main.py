@@ -1,18 +1,18 @@
 from random import randrange
-
+from orm import *
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from community_token import TOKEN_GROUP, TOKEN_USER
-from vk_requests import get_user_info, get_user_search
+from vk_requests import get_user_info, get_user_search, get_photos
 
-
+db = ORM()
 
 vk = vk_api.VkApi(token=TOKEN_GROUP)
 longpoll = VkLongPoll(vk)
 
 
 def write_msg(user_id, message):
-    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7),})
+    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7)})
 
 
 def greeting(user_id):
@@ -65,6 +65,8 @@ for event in longpoll.listen():
                     user_sex = get_sex()
                     user_info['sex'] = user_sex
 
-                for msg in get_user_search(user_info):
-                    print(type(msg))
-                    write_msg(event.user_id, msg)
+                user = get_user_search(user_info)
+                for i in user:
+                    user_id_to_db = i[0]
+                    db.create_tables()
+                    db.add_user(user_id_to_db, event.user_id)
