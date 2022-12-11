@@ -21,5 +21,13 @@ class ORM:
         self.session.add(date)
         self.session.commit()
 
+    def search_id(self, user_id):
+        id = self.session.query(Users).filter(Users.vk_id == user_id).first()
+        if id:
+            return True
+        else:
+            None
+
+
 if __name__ == "__main__":
     db = ORM()

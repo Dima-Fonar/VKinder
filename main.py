@@ -2,7 +2,7 @@ from random import randrange
 from orm import *
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from community_token import TOKEN_GROUP, TOKEN_USER
+from community_token import TOKEN_GROUP
 from vk_requests import get_user_info, get_user_search, get_photos
 
 db = ORM()
@@ -12,12 +12,34 @@ longpoll = VkLongPoll(vk)
 
 
 def write_msg(user_id, message):
+    """
+    функция отправки текстовых сообщений пользователю
+    :param user_id: VK id пользователя которуму отправляем сообщение
+    :param message: текс сообщения
+    :return:
+    """
     vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7)})
 
 
+def write_msg_attachment(user_id, message, attachment):
+    """
+    функция отправки сообщений с вложенными фото пользователю
+    :param user_id: VK id пользователя которуму отправляем сообщение
+    :param message: текс сообщения
+    :param attachment: медиавложения к личному сообщению, перечисленные через запятую.
+    :return:
+    """
+    vk.method('messages.send', {'user_id': user_id, 'message': message,  'random_id': randrange(10 ** 7), 'attachment': attachment})
+
+
 def greeting(user_id):
-    user = vk.method("users.get", {"user_ids": user_id})
-    fullname = user[0]["first_name"]
+    """
+    функция получает от API VK имя пользователя который общается с ботом
+    :param user_id:VK id пользователя
+    :return: Имя пользователя
+    """
+    user_fullname = vk.method("users.get", {"user_ids": user_id})
+    fullname = user_fullname[0]["first_name"]
     return fullname
 
 
@@ -69,4 +91,11 @@ for event in longpoll.listen():
                 for i in user:
                     user_id_to_db = i[0]
                     db.create_tables()
-                    db.add_user(user_id_to_db, event.user_id)
+                    if not db.search_id(user_id_to_db):
+                        db.add_user(user_id_to_db, event.user_id)
+                        photo = get_photos(user_id_to_db)
+                        write_msg_attachment(event.user_id,f'https://vk.com/id{user_id_to_db}', photo)
+
+
+
+
