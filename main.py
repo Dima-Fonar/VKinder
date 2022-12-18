@@ -69,6 +69,10 @@ def get_sex():
 
 
 def get_region_for_search_city_in_chat():
+    """
+    принимает в переменную регион в котором будет осуществлятся поиск
+    :return:
+    """
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
@@ -77,6 +81,11 @@ def get_region_for_search_city_in_chat():
                 return user_region
 
 def get_city_for_search_in_chat(user_region_id):
+    """
+    принимает в переменную город в котором будет осуществлятся поиск
+    :param user_region_id: id регион России
+    :return:
+    """
     for event in longpoll.listen():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
@@ -89,13 +98,7 @@ for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         if event.to_me:
             request = event.text
-            if request == "привет":
-                write_msg(event.user_id, f"Привет, {greeting(event.user_id)}!\n"
-                                         f"Для того чтобы начать искать себе пару введи команду 'start'")
-            elif request == "пока":
-                write_msg(event.user_id, "Пока((")
-
-            elif request == "start":
+            if request == "start":
                 user_info = get_user_info(event.user_id)
                 if 'city_id' not in user_info.keys():
                     write_msg(event.user_id, f"У тебя в профиле не указан город! Давай заполним!\n"
