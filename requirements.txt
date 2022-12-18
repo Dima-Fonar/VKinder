@@ -1,0 +1,4 @@
+requests==2.22.0
+SQLAlchemy==1.4.44
+vk-api==11.9.9
+

@@ -3,7 +3,7 @@ from random import randrange
 import requests
 import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
-from community_token import TOKEN_GROUP, TOKEN_USER
+from params import TOKEN_GROUP, TOKEN_USER, NUMBER_OF_RESULT
 import datetime
 import time
 
@@ -19,6 +19,11 @@ longpoll = VkLongPoll(vk)
 
 
 def get_user_info(user_id):
+    '''
+    функция получает информацию о пользователе из его профиля VK
+    :param user_id: id пользователя в VK
+    :return:
+    '''
     all_info = vk.method('users.get', {'user_id': user_id, 'fields': 'bdate,sex,city,relation'})
     all_info = all_info[0]
     user_info = {'id': user_id}
@@ -35,9 +40,14 @@ def get_user_info(user_id):
 
 
 def get_user_search(params_dict):
+    '''
+    по введенным параметрам осуществляет поиск человека противоположного пола
+    :param params_dict:
+    :return:
+    '''
     result_list = []
     params_for_search = {'access_token': TOKEN_USER, 'v': '5.131', 'sex': params_dict['sex'], 'city': str(params_dict['city_id']),
-                     'has_photo': 1, 'sort': 0, 'count': 15, 'status': 6, 'offset': randrange(10 * 40),
+                     'has_photo': 1, 'sort': 0, 'count': int(NUMBER_OF_RESULT), 'status': 6, 'offset': randrange(10 * 40),
                      'fields': 'bdate, sex, city, has_photo'}
     print(params_for_search['city'])
     if params_for_search['sex'] == '1':
@@ -65,7 +75,7 @@ def get_photos(user_id):
     result = requests.get('https://api.vk.com/method/photos.get', params={**requests_param}).json()
     time.sleep(0.15)
     for photo in result['response']['items']:
-        likes_photo.append([photo['id'], photo['likes']['count']])
+        likes_photo.append([photo['id'], photo['likes']['count'] + photo['comments']['count']])
     likes_photo.sort(key=lambda x: x[1], reverse=True)
     if len(likes_photo) > 3:
         likes_photo = likes_photo[:3]
@@ -77,6 +87,28 @@ def get_photos(user_id):
     return attachment_str
 
 
+def get_region(name_region):
+    region_list = []
+    requests_param = {'access_token': TOKEN_USER, 'v': '5.131', 'country_id': 1, 'q': name_region}
+    region = requests.get('https://api.vk.com/method/database.getRegions', params={**requests_param}).json()
+    if region['response']['count'] > 1:
+        for one_region in region['response']['items']:
+            #print(one_region)
+            region_list.append(one_region['title'])
+        return region_list
+    if len(region['response']['items']) == 1:
+        #print(f'найден один регион {region["response"]["items"][0]["id"]}')
+        return region['response']['items'][0]['id']
+    else:
+        return f'Я не нашел такой регион, введи заново!'
+
+def get_city(region_id, name_city):
+    requests_param = {'access_token': TOKEN_USER, 'v': '5.131', 'country_id': 1, 'q': name_city, 'region_id': region_id}
+    city = requests.get('https://api.vk.com/method/database.getCities', params={**requests_param}).json()
+    if city['response']['count'] == 0:
+        return f'Я не нашел такой город, введи заново!'
+    else:
+        return city['response']['items'][0]['id']
 
 
 

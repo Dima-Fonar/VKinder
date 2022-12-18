@@ -1,10 +1,11 @@
 from sqlalchemy.orm import sessionmaker
 from models import *
+from params import BD_CONNECT
 
 
 class ORM:
     def __init__(self):
-        self.DSN = 'postgresql://postgres:postgres@localhost:5432/vkinder_db'
+        self.DSN = BD_CONNECT
         self.engine = sq.create_engine(self.DSN)
 
         Session = sessionmaker(bind=self.engine)
@@ -21,8 +22,8 @@ class ORM:
         self.session.add(date)
         self.session.commit()
 
-    def search_id(self, user_id):
-        id = self.session.query(Users).filter(Users.vk_id == user_id).first()
+    def search_id(self, looking_user_id, who_looking_user_id):
+        id = self.session.query(Users).filter(Users.vk_id == looking_user_id and Users.vk_id_user_looking == who_looking_user_id).first()
         if id:
             return True
         else:
