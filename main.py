@@ -4,7 +4,6 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from params import TOKEN_GROUP
 from vk_requests import get_user_info, get_user_search, get_photos, get_region, get_city
-from vk_api.keyboard import VkKeyboard, VkKeyboardColor
 
 
 db = ORM()

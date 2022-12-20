@@ -10,13 +10,6 @@ import time
 vk = vk_api.VkApi(token=TOKEN_GROUP)
 longpoll = VkLongPoll(vk)
 
-# def build_url(params_dict):
-#     url = "https://api.vk.com/method/execute?"
-#     code = f'return [API.users.search({params_dict})];'
-#     data = dict(code=code, access_token=TOKEN_USER, v='5.131')
-#     resp = requests.post(url=url, data=data).json()
-#     print(resp)
-
 
 def get_user_info(user_id):
     '''
@@ -93,11 +86,9 @@ def get_region(name_region):
     region = requests.get('https://api.vk.com/method/database.getRegions', params={**requests_param}).json()
     if region['response']['count'] > 1:
         for one_region in region['response']['items']:
-            #print(one_region)
             region_list.append(one_region['title'])
         return region_list
     if len(region['response']['items']) == 1:
-        #print(f'найден один регион {region["response"]["items"][0]["id"]}')
         return region['response']['items'][0]['id']
     else:
         return f'Я не нашел такой регион, введи заново!'

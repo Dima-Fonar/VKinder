@@ -8,8 +8,8 @@ class Users(Base):
     __tablename__ = 'users'
 
     id = sq.Column(sq.Integer, primary_key=True)
-    vk_id = sq.Column(sq.Integer)
-    vk_id_user_looking = sq.Column(sq.Integer)
+    vk_id = sq.Column(sq.Integer)   # id найденной страницы
+    vk_id_user_looking = sq.Column(sq.Integer)   # id пользователя который осуществлял поиск
 
     def __str__(self):
         return f'https://vk.com/id{self.vk_id}'
