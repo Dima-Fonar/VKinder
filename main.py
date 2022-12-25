@@ -79,7 +79,7 @@ def get_region_for_search_city_in_chat():
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 user_answer = event.text
-                user_region = get_region(user_answer)
+                user_region = get_region(user_answer, event.user_id)
                 return user_region
 
 
@@ -93,7 +93,7 @@ def get_city_for_search_in_chat(user_region_id):
         if event.type == VkEventType.MESSAGE_NEW:
             if event.to_me:
                 user_answer = event.text
-                user_city = get_city(user_region_id, user_answer)
+                user_city = get_city(user_region_id, user_answer, event.user_id)
                 return user_city
 
 
@@ -103,7 +103,6 @@ for event in longpoll.listen():
             request = event.text
             if request == "start":
                 user_info = get_user_info(event.user_id)
-
                 if 'city_id' not in user_info.keys():  # Проверка, заполнено ли поле город в профиле пользователя
                     write_msg(event.user_id, f"У тебя в профиле не указан город! Давай заполним!\n"
                                              " Введи название региона в котором хочешь искать пару.")
@@ -147,13 +146,13 @@ for event in longpoll.listen():
                     user_sex = get_sex()
                     user_info['sex'] = user_sex
 
-                user = get_user_search(user_info)
+                user = get_user_search(user_info, event.user_id)
                 for i in user:
                     user_id_to_db = i[0]
                     db.create_tables()
                     if not db.search_id(user_id_to_db, event.user_id):  # проверка, отправлялась ли найденная
                         # страница  данному пользователю
                         db.add_user(user_id_to_db, event.user_id)  # добавление найденной страницы в БД
-                        photo = get_photos(user_id_to_db)  # получение трех лучших фото
+                        photo = get_photos(user_id_to_db, event.user_id)  # получение трех лучших фото
                         write_msg_attachment(event.user_id, f'https://vk.com/id{user_id_to_db}', photo)  # отправка
                         # ссылки и фото в чат
