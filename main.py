@@ -4,13 +4,12 @@ import vk_api
 from vk_api.longpoll import VkLongPoll, VkEventType
 from params import TOKEN_GROUP
 from vk_requests import get_user_info, get_user_search, get_photos, get_region, get_city
-
+from keyboard import vk_keyboard
 
 db = ORM()
 
 vk = vk_api.VkApi(token=TOKEN_GROUP)
 longpoll = VkLongPoll(vk)
-
 
 
 def write_msg(user_id, message):
@@ -32,7 +31,13 @@ def write_msg_attachment(user_id, message, attachment):
     :return:
     """
     vk.method('messages.send',
-              {'user_id': user_id, 'message': message,'random_id': randrange(10 ** 7), 'attachment': attachment})
+              {'user_id': user_id, 'message': message, 'random_id': randrange(10 ** 7), 'attachment': attachment})
+
+
+def send_button(user_id):
+    vk.method('messages.send',
+              {'user_id': user_id, 'random_id': randrange(10 ** 7), 'keyboard': vk_keyboard.get_keyboard(),
+               'message': '<-->'})
 
 
 def greeting(user_id):
@@ -97,11 +102,14 @@ def get_city_for_search_in_chat(user_region_id):
                 return user_city
 
 
+count = 1
 for event in longpoll.listen():
     if event.type == VkEventType.MESSAGE_NEW:
         if event.to_me:
             request = event.text
             if request == "start":
+                db.drop_all_tables()
+
                 user_info = get_user_info(event.user_id)
                 if 'city_id' not in user_info.keys():  # Проверка, заполнено ли поле город в профиле пользователя
                     write_msg(event.user_id, f"У тебя в профиле не указан город! Давай заполним!\n"
@@ -153,6 +161,31 @@ for event in longpoll.listen():
                     if not db.search_id(user_id_to_db, event.user_id):  # проверка, отправлялась ли найденная
                         # страница  данному пользователю
                         db.add_user(user_id_to_db, event.user_id)  # добавление найденной страницы в БД
-                        photo = get_photos(user_id_to_db, event.user_id)  # получение трех лучших фото
-                        write_msg_attachment(event.user_id, f'https://vk.com/id{user_id_to_db}', photo)  # отправка
-                        # ссылки и фото в чат
+                count_id_in_db = db.count_id()
+                id_for_search = db.search_id_in_db(count)
+                print(id_for_search)
+                photo = get_photos(id_for_search, event.user_id)
+                write_msg_attachment(event.user_id, f'https://vk.com/id{id_for_search}', photo)
+                send_button(event.user_id)
+
+            if request == "Далее":
+                count += 1
+                id_for_search = db.search_id_in_db(count)
+                if id_for_search is None:
+                    write_msg(event.user_id, 'Все, ты всех посмотрел! Листай назад!')
+                    send_button(event.user_id)
+                else:
+                    photo = get_photos(id_for_search, event.user_id)
+                    write_msg_attachment(event.user_id, f'https://vk.com/id{id_for_search}', photo)
+                    send_button(event.user_id)
+
+            if request == "Назад":
+                count -= 1
+                id_for_search = db.search_id_in_db(count)
+                if id_for_search is None:
+                    write_msg(event.user_id, 'Тут никого нет! Нажми далее!')
+                    send_button(event.user_id)
+                else:
+                    photo = get_photos(id_for_search, event.user_id)
+                    write_msg_attachment(event.user_id, f'https://vk.com/id{id_for_search}', photo)
+                    send_button(event.user_id)

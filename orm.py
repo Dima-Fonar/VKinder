@@ -23,11 +23,20 @@ class ORM:
         self.session.commit()
 
     def search_id(self, looking_user_id, who_looking_user_id):
-        id = self.session.query(Users).filter(Users.vk_id == looking_user_id and Users.vk_id_user_looking == who_looking_user_id).first()
+        id = self.session.query(Users).filter(
+            Users.vk_id == looking_user_id and Users.vk_id_user_looking == who_looking_user_id).first()
         if id:
             return True
         else:
             None
+
+    def search_id_in_db(self, ids):
+        i = self.session.query(Users.vk_id).filter(Users.id == ids)
+        return i.value(Users.vk_id)
+
+    def count_id(self):
+        count = self.session.query(Users.id).count()
+        return count
 
 
 if __name__ == "__main__":

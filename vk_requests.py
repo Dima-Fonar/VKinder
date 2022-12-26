@@ -23,7 +23,7 @@ def error_msg(user_id, error):
     """
     message = (f'Ошибка!\nКод ошибки: {error[0][1]}\nТекст ошибки: {error[0][2]}')
     vk.method('messages.send', {'user_id': user_id, 'message': message, 'random_id': randrange(10 ** 7)})
-    print(f'Ошибка VK API!\nКод ошибки: {error[0][1]}\nТекст ошибки: {error[0][2]}')
+    print(f'Ошибка VK API!\nКод ошибки: {error[0][1]}\nТекст ошибки: {error[0][2]}\nФункция: {error[0][3]}')
     print(f'Работа программы прервана!')
 
 
@@ -48,7 +48,7 @@ def get_user_info(user_id):
             user_info['relation'] = all_info['relation']
         return user_info
     except KeyError:
-        body_error.append(['error', all_info['error']['error_code'], all_info['error']['error_msg']])
+        body_error.append(['error', all_info['error']['error_code'], all_info['error']['error_msg'], 'get_user_info'])
         error_msg(user_id, body_error)
         sys.exit()
 
@@ -66,7 +66,6 @@ def get_user_search(params_dict, vk_id_error):
                          'has_photo': 1, 'sort': 0, 'count': int(NUMBER_OF_RESULT), 'status': 6,
                          'offset': randrange(10 * 40),
                          'fields': 'bdate, sex, city, has_photo'}
-    print(params_for_search['city'])
     if params_for_search['sex'] == '1':
         params_for_search['sex'] = '2'
     else:
@@ -88,7 +87,7 @@ def get_user_search(params_dict, vk_id_error):
                     [user['id'], f"{user['first_name']} {user['last_name']} https://vk.com/id{user['id']}"])
         return result_list
     except KeyError:
-        body_error.append(['error', result['error']['error_code'], result['error']['error_msg']])
+        body_error.append(['error', result['error']['error_code'], result['error']['error_msg'], 'get_user_search'])
         error_msg(vk_id_error, body_error)
         sys.exit()
 
@@ -112,7 +111,7 @@ def get_photos(user_id, vk_id_error):
         time.sleep(0.35)
         return attachment_str
     except KeyError:
-        body_error.append(['error', result['error']['error_code'], result['error']['error_msg']])
+        body_error.append(['error', result['error']['error_code'], result['error']['error_msg'], 'get_photos'])
         error_msg(vk_id_error, body_error)
         sys.exit()
 
@@ -131,7 +130,7 @@ def get_region(name_region, vk_id_error):
         else:
             return f'Я не нашел такой регион, введи заново!'
     except KeyError:
-        body_error.append(['error', region['error']['error_code'], region['error']['error_msg']])
+        body_error.append(['error', region['error']['error_code'], region['error']['error_msg'], 'get_region'])
         error_msg(vk_id_error, body_error)
         sys.exit()
 
@@ -145,6 +144,6 @@ def get_city(region_id, name_city, vk_id_error):
         else:
             return city['response']['items'][0]['id']
     except KeyError:
-        body_error.append(['error', city['error']['error_code'], city['error']['error_msg']])
+        body_error.append(['error', city['error']['error_code'], city['error']['error_msg'], 'get_city'])
         error_msg(vk_id_error, body_error)
         sys.exit()
